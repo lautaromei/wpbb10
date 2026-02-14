@@ -1,0 +1,17 @@
+{
+  "name": "wpbb-server",
+  "version": "1.0.0",
+  "description": "WhatsApp bridge API for WPBB Android app",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "ngrok": "node index.js --ngrok"
+  },
+  "dependencies": {
+    "@ngrok/ngrok": "^1.4.1",
+    "express": "^4.18.2",
+    "qrcode": "^1.5.3",
+    "whatsapp-web.js": "^1.26.1-alpha.1",
+    "ws": "^8.16.0"
+  }
+}

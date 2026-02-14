@@ -1,14 +1,14 @@
 # WPBB Server
 
-Servidor bridge entre WhatsApp Web y la app Android WPBB. Usa [whatsapp-web.js](https://github.com/nicoh3/whatsapp-web.js) con Puppeteer/Chromium headless.
+Bridge server between WhatsApp Web and the WPBB Android app. Uses [whatsapp-web.js](https://github.com/nicoh3/whatsapp-web.js) with headless Puppeteer/Chromium.
 
-## Requisitos
+## Requirements
 
 - Node.js 18+
-- Chromium/Chrome (lo descarga Puppeteer automaticamente, o se instala manual en Linux)
-- ffmpeg (para convertir audios OGG/Opus a MP3)
+- Chromium/Chrome (Puppeteer downloads it automatically, or install manually on Linux)
+- ffmpeg (to convert OGG/Opus audio to MP3)
 
-## Instalacion local (Mac/Linux)
+## Local Setup (Mac/Linux)
 
 ```bash
 cd server
@@ -16,22 +16,22 @@ npm install
 node index.js
 ```
 
-El server arranca en `http://localhost:3000`.
+Server starts at `http://localhost:3000`.
 
-## Instalacion en Amazon Linux (EC2)
+## Amazon Linux (EC2) Setup
 
-### 1. Instalar Node.js
+### 1. Install Node.js
 
 ```bash
 # Amazon Linux 2023
 sudo yum install -y nodejs npm
 
-# Amazon Linux 2 (si no tiene nodejs 18)
+# Amazon Linux 2 (if nodejs 18 is not available)
 curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
 sudo yum install -y nodejs
 ```
 
-### 2. Instalar dependencias de Chromium
+### 2. Install Chromium dependencies
 
 ```bash
 sudo yum install -y \
@@ -40,7 +40,7 @@ sudo yum install -y \
   libXScrnSaver gtk3 ipa-gothic-fonts
 ```
 
-### 3. Instalar ffmpeg (para audios)
+### 3. Install ffmpeg (for audio conversion)
 
 ```bash
 # Amazon Linux 2023
@@ -51,37 +51,37 @@ sudo amazon-linux-extras install epel -y
 sudo yum install -y ffmpeg
 ```
 
-### 4. Subir el server desde tu Mac
+### 4. Upload the server from your Mac
 
 ```bash
 rsync -avz --exclude node_modules --exclude .wwebjs_auth --exclude .tmp \
   -e "ssh -i wp.pem" \
   ./server/ \
-  ec2-user@TU_IP:~/server/
+  ec2-user@YOUR_IP:~/server/
 ```
 
-### 5. Instalar dependencias en el EC2
+### 5. Install dependencies on the EC2 instance
 
 ```bash
-ssh -i wp.pem ec2-user@TU_IP
+ssh -i wp.pem ec2-user@YOUR_IP
 cd ~/server
 npm install
 ```
 
-### 6. Correr el server
+### 6. Run the server
 
 ```bash
-# Modo simple (se cierra al salir de SSH)
+# Simple mode (stops when you close SSH)
 node index.js
 
-# Modo background (sobrevive al cerrar SSH)
+# Background mode (survives SSH disconnect)
 nohup node index.js > server.log 2>&1 &
 
-# Ver logs
+# View logs
 tail -f server.log
 ```
 
-### 7. (Recomendado) Configurar como servicio systemd
+### 7. (Recommended) Set up as a systemd service
 
 ```bash
 sudo tee /etc/systemd/system/wpbb.service << 'EOF'
@@ -107,59 +107,59 @@ sudo systemctl enable wpbb
 sudo systemctl start wpbb
 ```
 
-Comandos utiles:
+Useful commands:
 
 ```bash
-sudo systemctl status wpbb     # Ver estado
-sudo systemctl restart wpbb    # Reiniciar
-sudo systemctl stop wpbb       # Parar
-sudo journalctl -u wpbb -f     # Ver logs en vivo
+sudo systemctl status wpbb     # Check status
+sudo systemctl restart wpbb    # Restart
+sudo systemctl stop wpbb       # Stop
+sudo journalctl -u wpbb -f     # View live logs
 ```
 
-## Uso con ngrok (opcional)
+## Using ngrok (optional)
 
-Si necesitas acceso HTTPS desde fuera de la red local:
+If you need HTTPS access from outside the local network:
 
-1. Crear cuenta en [ngrok.com](https://ngrok.com) y obtener un authtoken
-2. Configurar el token:
+1. Create an account at [ngrok.com](https://ngrok.com) and get an authtoken
+2. Set the token:
    ```bash
-   export NGROK_AUTHTOKEN=tu_token_aqui
+   export NGROK_AUTHTOKEN=your_token_here
    ```
-3. Correr con ngrok:
+3. Run with ngrok:
    ```bash
    node index.js --ngrok
    ```
 
 ## API Endpoints
 
-| Metodo | Ruta | Descripcion |
-|--------|------|-------------|
-| GET | `/` | Health check y estado |
-| GET | `/api/status` | Estado de WhatsApp (initializing/qr_needed/ready/disconnected) |
-| GET | `/api/qr` | Obtener QR code para autenticar |
-| GET | `/api/chats?limit=20` | Lista de chats |
-| GET | `/api/chats/:id/messages?limit=50` | Mensajes de un chat |
-| POST | `/api/chats/:id/messages` | Enviar mensaje `{ "body": "texto" }` |
-| POST | `/api/chats/:id/messages/media` | Enviar media `{ "data": "base64", "mimetype": "...", "filename": "..." }` |
-| POST | `/api/chats/:id/messages/:msgId/react` | Reaccionar `{ "emoji": "..." }` |
-| POST | `/api/chats/:id/read` | Marcar chat como leido |
-| GET | `/api/chats/:id/profile-pic` | Foto de perfil del chat |
-| GET | `/api/media/:id` | Descargar media (convierte audio a MP3) |
-| GET | `/api/contacts/search?q=nombre` | Buscar contactos |
-| GET | `/api/tunnel` | URL publica (ngrok) |
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/` | Health check and status |
+| GET | `/api/status` | WhatsApp state (initializing/qr_needed/ready/disconnected) |
+| GET | `/api/qr` | Get QR code for authentication |
+| GET | `/api/chats?limit=20` | List chats |
+| GET | `/api/chats/:id/messages?limit=50` | Get messages from a chat |
+| POST | `/api/chats/:id/messages` | Send message `{ "body": "text" }` |
+| POST | `/api/chats/:id/messages/media` | Send media `{ "data": "base64", "mimetype": "...", "filename": "..." }` |
+| POST | `/api/chats/:id/messages/:msgId/react` | React to message `{ "emoji": "..." }` |
+| POST | `/api/chats/:id/read` | Mark chat as read |
+| GET | `/api/chats/:id/profile-pic` | Get chat profile picture |
+| GET | `/api/media/:id` | Download media (converts audio to MP3) |
+| GET | `/api/contacts/search?q=name` | Search contacts |
+| GET | `/api/tunnel` | Get public URL (ngrok) |
 
 ## WebSocket
 
-Conectar a `ws://TU_IP:3000`. Eventos:
+Connect to `ws://YOUR_IP:3000`. Events:
 
-- `new_message` - Mensaje nuevo
-- `message_ack` - Cambio de estado de entrega (enviado/recibido/leido)
-- `status_change` - Cambio de estado de WhatsApp
-- `reaction` - Reaccion a un mensaje
+- `new_message` - New incoming/outgoing message
+- `message_ack` - Delivery status change (sent/delivered/read)
+- `status_change` - WhatsApp connection state change
+- `reaction` - Reaction to a message
 
-## Notas
+## Notes
 
-- La sesion de WhatsApp se guarda en `.wwebjs_auth/`. Si se borra, hay que escanear el QR de nuevo.
-- Los audios se convierten automaticamente de OGG/Opus a MP3 para compatibilidad con Android 4.3+.
-- El servidor se reconecta automaticamente si WhatsApp Web pierde la conexion.
-- Puerto por defecto: 3000. Cambiar con `PORT=8080 node index.js`.
+- The WhatsApp session is saved in `.wwebjs_auth/`. If deleted, you'll need to scan the QR code again.
+- Audio messages are automatically converted from OGG/Opus to MP3 for Android 4.3+ compatibility.
+- The server automatically reconnects if WhatsApp Web loses the connection.
+- Default port: 3000. Change with `PORT=8080 node index.js`.
